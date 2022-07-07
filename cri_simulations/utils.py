@@ -167,6 +167,13 @@ class connectome:
             if (currNeuron.get_output() == True and currNeuron.get_neuron_type() == 'neuron' and currNeuron.get_core() == core) :
                 outputs.append(currNeuron.get_coreTypeIdx())
          return outputs
+    def get_outputs_idx(self):
+         outputs = []
+         for key in self.connectomeDict:
+            currNeuron = self.connectomeDict[key]
+            if (currNeuron.get_output() == True and currNeuron.get_neuron_type() == 'neuron') :
+                outputs.append(currNeuron.get_coreTypeIdx())
+         return outputs
     def apply_partition(self,membership):
         #breakpoint()
         mergedNeurons = self.get_merged_neurons()
