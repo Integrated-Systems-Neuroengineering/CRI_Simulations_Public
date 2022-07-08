@@ -134,16 +134,15 @@ def read_spikes(string):
             strippedSubstring = substring.replace('INFO', '')
             new = ''
             for i in strippedSubstring:
-    
-                if i not in [':', '?', '.', '@']:
+                #breakpoint()
+                if i in ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F', ' ']:
                     new += i
-
             new = new.strip().split(' ')
             new = [i for i in list(filter(None, new)) if len(i) < 3]
             processedString += new
     processedString.reverse()
     mergedString = "".join(processedString)
-    spikeInt = integer = int(mergedString, 16) #convert hex to dec
+    spikeInt = int(mergedString, 16) #convert hex to dec
     binLength = len(mergedString)*4 #calculate number of bits hex string should occupy
     binary = bin_format(spikeInt, binLength) #convert to binary string
     #extract the tag
@@ -156,19 +155,22 @@ def read_spikes(string):
     spikeList = []
     for spikePacket in [spikeData[i:i+spikePacketLength] for i in range(0, len(spikeData), spikePacketLength)]:
         subexecutionRun_counter, address = processSpikePacket(spikePacket)
-        if (subexecutionRun_counter and address):
+        if (subexecutionRun_counter != None and address != None):
             spikeList.append((subexecutionRun_counter,address))
     #breakpoint()
+    #print('spikeList: ' + str(spikeList))
     return executionRun_counter, spikeList
 
 def processSpikePacket(spikePacket):
     """Processes an incoming binary string representing a single spike event
     """
     #breakpoint()
-    valid = bool(spikePacket[8]) #check if it's a valid spike packet
+    valid = bool(int(spikePacket[8])) #check if it's a valid spike packet
+    #valid = True #TODO: THIS IS JUST FOR DEBUGGING DELETE THIS LINE
     if valid:
         subexecutionRun_counter = int(spikePacket[0:8], 2)
         address = int(spikePacket[-17:],2)
+        #breakpoint()
         return subexecutionRun_counter, address
     else:
         return None, None
@@ -356,6 +358,7 @@ def read(n_internal, simDump = False, coreID = 0):
     """This function reads in the membrane potentials from the fpga.
 
     """
+    #breakpoint()
     above_thresh = []
     #updated Feb11
     #load()#is this even needen
@@ -399,12 +402,10 @@ def read(n_internal, simDump = False, coreID = 0):
                     currentRead = subprocess.run(['sudo', 'adxdma_dmadump', 'rb', '0', '0' ,'0x40'], stdout=subprocess.PIPE, check=True).stdout.decode('utf-8')
                     if(get_packet_type(currentRead) == 'CCCC'):
                         break
-                    if(get_packet_type(currentRead) == 'EEEE'): #TODO: this is just here for debugging
-                        #print("found spike")
-                        #print(currentRead)
+                    else: #TODO: this is just here for debugging
                         #executionRun_counter, spikeList = read_spikes(currentRead)
                         #spikeOutput = spikeOutput + spikeList
-                        logging.error("an errant spike was detected during membrane potential readout")
+                        logging.error("an errant packet was detected during membrane potential readout")
                         #print(executionRun_counter)
                         #print(spikeList)
 
